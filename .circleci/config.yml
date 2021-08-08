@@ -1,0 +1,75 @@
+version: 2
+
+defaults: &defaults
+  docker:
+    - image: circleci/python:3.9.5
+  working_directory: ~/project
+
+prepare_venv: &prepare_venv
+  run:
+    name: Create venv
+    command: |
+      python3 -m venv venv
+      source venv/bin/activate
+      pip install --upgrade pip
+
+prepare_tox: &prepare_tox
+  run:
+    name: Install tox
+    command: |
+      sudo pip install --upgrade pip
+      pip install --user tox
+
+fetch_data: &fetch_data
+  run:
+    name: Set script permissions and fetch data
+    command: |
+      source venv/bin/activate
+      chmod +x ./scripts/fetch_kaggle_dataset.sh
+      ./scripts/fetch_kaggle_dataset.sh
+
+jobs:
+  test_app:
+    <<: *defaults
+    working_directory: ~/Documents/Projects/npci-udir-api
+    steps:
+      - checkout:
+          path: ~/Documents/Projects
+      - *prepare_tox
+      - run:
+          name: Runnning app tests
+          command: |
+            tox -e test_app
+
+  deploy_app_to_heroku:
+    <<: *defaults
+    working_directory: ~/Documents/Projects/npci-udir-api
+    steps:
+      - checkout:
+          path:  ~/Documents/Projects
+      - run:
+          name: Deploy to Heroku
+          command: |
+            git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+
+workflows:
+  version: 2
+  build_and_test_api:
+    jobs:
+      - test_app:
+          filters:
+            branches:
+              ignore: main
+  deploy_to_production:
+    jobs:
+      - test_app:
+          filters: &filters-production
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
+      - deploy_app_to_heroku:
+          requires:
+            - test_app
+          filters:
+            <<: *filters-production
