@@ -59,7 +59,7 @@ workflows:
       - test_app:
           filters:
             branches:
-              ignore: main
+              ignore: master
   deploy_to_production:
     jobs:
       - test_app:
