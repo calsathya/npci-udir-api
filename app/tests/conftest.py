@@ -18,7 +18,7 @@ def test_fetch_transaction_data() -> dict:
         transaction_request=dict(
             txn_id="123456789",
             ref_url="",
-            type=10,
+            type="abc"",
             sub_type="15",
             mobile_no="1234567890",
             ifsc_code="HDFC00001234",
