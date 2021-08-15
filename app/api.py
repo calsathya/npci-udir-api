@@ -1,7 +1,8 @@
 import json
+import xml.etree.ElementTree as ET
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
 
@@ -49,3 +50,18 @@ async def fetch_transaction(input_data: fetchtransaction.Request) -> Any:
     logger.info(f"Fetch transaction results: {results.get('transactions')}")
 
     return results
+
+
+@api_router.post("/ResponseXML/")
+async def get_xml_response(input_data: str) -> Any:
+    xml_request = None
+    data = ""
+    try:
+        xml_request = ET.fromstring(input_data)
+        str_response = ET.tostring(xml_request, encoding="unicode")
+        str_response = str(str_response)
+        data = f"<Response>{str_response}</Response>"
+    except:
+        raise HTTPException(status_code=400, detail=input_data)
+
+    return Response(content=data, media_type="application/xml")

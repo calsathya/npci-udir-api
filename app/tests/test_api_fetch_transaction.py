@@ -1,8 +1,9 @@
-
 from fastapi.testclient import TestClient
 
 
-def test_fetch_transaction(client: TestClient, test_fetch_transaction_data: dict, api_url: str) -> None:
+def test_fetch_transaction(
+    client: TestClient, test_fetch_transaction_data: dict, api_url: str
+) -> None:
     # Given
     payload = test_fetch_transaction_data
     ft_api = api_url + "fetch-transaction"
